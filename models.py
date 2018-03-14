@@ -5,6 +5,7 @@ from pynamodb.attributes import MapAttribute, ListAttribute, UnicodeAttribute, N
 from pynamodb.indexes import AllProjection
 from pynamodb.indexes import GlobalSecondaryIndex
 from pynamodb.models import Model
+from flask import jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 
 
@@ -16,16 +17,6 @@ def is_password_hash(pwhash):
     return method.startswith('pbkdf2:') and len(method[7:].split(':')) in (1, 2)
 
 
-class ModelEncoder(json.JSONEncoder):
-    def default(self, obj):
-        print 'youuerb'
-        if hasattr(obj, 'attribute_values'):
-            return obj.attribute_values
-        return json.JSONEncoder.default(self, obj)
-
-
-def json_dumps(obj):
-    return json.dumps(obj, cls=ModelEncoder)
 
 class PasswordAttribute(UnicodeAttribute):
     def serialize(self, value):
@@ -38,22 +29,26 @@ class PasswordAttribute(UnicodeAttribute):
 
 
 class SessionMap(MapAttribute):
-    id = UnicodeAttribute(null=False)
-    start_timestamp = NumberAttribute(null=False)
-    end_timestamp = NumberAttribute()
-    result = UnicodeAttribute(null=False)
-
-
-class User(Model, ModelEncoder):
-    class Meta:
-        table_name = "dunkin"
-        host = "https://dynamodb.us-east-1.amazonaws.com"
+    def deserialize(self, value):
+        return self
 
     def to_dict(self):
         rval = {}
         for key in self.attribute_values:
+            print key
             rval[key] = self.__getattribute__(key)
         return rval
+
+    id = UnicodeAttribute(null=False)
+    start_timestamp = NumberAttribute(attr_name='start_timestamp')
+    end_timestamp = NumberAttribute(attr_name='end_timestamp')
+    result = UnicodeAttribute(null=False)
+
+
+class User(Model):
+    class Meta:
+        table_name = "dunkin"
+        host = "https://dynamodb.us-east-1.amazonaws.com"
 
     def __init__(self, hash_key=None, range_key=None, **args):
         Model.__init__(self, hash_key, range_key, **args)
