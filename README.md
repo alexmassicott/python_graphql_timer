@@ -1,9 +1,9 @@
 Example Flask+PynamoDB Project
 ================================
 
-This example project demos integration between Graphene, Flask, 
+This example project demos integration between Graphene, Flask,
 Flask-JWT and PynamoDB.
-The project a User model, an authenticated graphql endpoint, and some 
+The project a User model, an authenticated graphql endpoint, and some
 basic security around getting user objects through graphql.
 
 Getting started
@@ -72,8 +72,9 @@ Authorization: JWT token-goes-here
 You can also test it using curl:
 ```
 curl -X GET -H "Authorization: JWT [token from previous curl request]" "http://127.0.0.1:5000/graphql?query=\{viewer\{id,firstName,lastName,email\}\}"
-```
-
+`
+``
+curl -X GET -H "Authorization: JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGl0eSI6IjEwMTAwMjkwMDk2NjUxNTk4IiwiaWF0IjoxNTIxMDUxNDEyLCJuYmYiOjE1MjEwNTE0MTIsImV4cCI6NTM3NzU3NzE0MTJ9.di3NDHNQa8_rk1jEjCGAeH8dwH1kt3406QsaNHI3G_Y" "http://127.0.0.1:5000/graphql?query=\{viewer\{name,completions,sessions,history\}\}"
 Here is a simple GraphQL query to get you started:
 ```
 {

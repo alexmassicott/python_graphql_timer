@@ -1,6 +1,7 @@
 import uuid
+import json
 
-from pynamodb.attributes import UnicodeAttribute
+from pynamodb.attributes import MapAttribute, ListAttribute, UnicodeAttribute, NumberAttribute
 from pynamodb.indexes import AllProjection
 from pynamodb.indexes import GlobalSecondaryIndex
 from pynamodb.models import Model
@@ -15,6 +16,17 @@ def is_password_hash(pwhash):
     return method.startswith('pbkdf2:') and len(method[7:].split(':')) in (1, 2)
 
 
+class ModelEncoder(json.JSONEncoder):
+    def default(self, obj):
+        print 'youuerb'
+        if hasattr(obj, 'attribute_values'):
+            return obj.attribute_values
+        return json.JSONEncoder.default(self, obj)
+
+
+def json_dumps(obj):
+    return json.dumps(obj, cls=ModelEncoder)
+
 class PasswordAttribute(UnicodeAttribute):
     def serialize(self, value):
         if is_password_hash(value):
@@ -25,19 +37,23 @@ class PasswordAttribute(UnicodeAttribute):
         return value
 
 
-class UserEmailIndex(GlobalSecondaryIndex):
+class SessionMap(MapAttribute):
+    id = UnicodeAttribute(null=False)
+    start_timestamp = NumberAttribute(null=False)
+    end_timestamp = NumberAttribute()
+    result = UnicodeAttribute(null=False)
+
+
+class User(Model, ModelEncoder):
     class Meta:
-        read_capacity_units = 1
-        write_capacity_units = 1
-        projection = AllProjection()
-
-    email = UnicodeAttribute(hash_key=True)
-
-
-class User(Model):
-    class Meta:
-        table_name = "users"
+        table_name = "dunkin"
         host = "https://dynamodb.us-east-1.amazonaws.com"
+
+    def to_dict(self):
+        rval = {}
+        for key in self.attribute_values:
+            rval[key] = self.__getattribute__(key)
+        return rval
 
     def __init__(self, hash_key=None, range_key=None, **args):
         Model.__init__(self, hash_key, range_key, **args)
@@ -45,14 +61,13 @@ class User(Model):
             self.id = str(uuid.uuid4())
 
     id = UnicodeAttribute(hash_key=True)
+    role = UnicodeAttribute(null=False)
+    name = UnicodeAttribute(null=False)
     email = UnicodeAttribute(null=False)
-    email_index = UserEmailIndex()
-    first_name = UnicodeAttribute(null=False)
-    last_name = UnicodeAttribute(null=False)
+    history = ListAttribute(of=SessionMap)
+    sessions = NumberAttribute(null=False)
+    completions = NumberAttribute(null=False)
     password = PasswordAttribute(null=False)
-
-    def check_password(self, password):
-        return check_password_hash(self.password, password)
 
 
 if not User.exists():
