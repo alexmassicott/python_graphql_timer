@@ -48,10 +48,10 @@ class SessionMap(MapAttribute):
             if attr_value is not None:
                 deserialized_value = attr_class.deserialize(attr_value)
 
-            deserialized_dict[key] = json.dumps(deserialized_value)
+            deserialized_dict[key] = deserialized_value
 
         # If this is a subclass of a MapAttribute (i.e typed), instantiate an instance
-        return deserialized_dict
+        return json.dumps(deserialized_dict, ensure_ascii=False)
 
     id = UnicodeAttribute(attr_name='id')
     start_timestamp = NumberAttribute(attr_name='start_timestamp')

@@ -25,12 +25,11 @@ class User(PynamoObjectType):
         return logged_in_user
 
 
-class Query(graphene.ObjectType):
+class ViewerQuery(graphene.ObjectType):
     node = relay.Node.Field()
-    viewer = graphene.Field(User, )
-    users = graphene.Field(User, id=graphene.String() )
+    fields = graphene.Field(User, )
 
-    def resolve_viewer(self, args, context, info):
+    def resolve_fields(self, args, context, info):
         try:
             logged_in_user = g.user
         except AttributeError:
@@ -38,20 +37,39 @@ class Query(graphene.ObjectType):
 
         return logged_in_user
 
+
+class UsersQuery(graphene.ObjectType):
+    node = relay.Node.Field()
+    users = graphene.List(User, id=graphene.List(graphene.String) )
+
     def resolve_users(self, args, context, info):
-        print args['id']
-        return UserModel.get(args['id'])
-
-schema = graphene.Schema(query=Query)
+        result = UserModel.batch_get(args['id'])
+        return [next(result) for i in args['id']]
 
 
-def graphql_token_view():
-    view = GraphQLView.as_view('graphql', schema=schema, graphiql=bool(app.config.get("DEBUG", False)))
+schema = graphene.Schema(query=ViewerQuery)
+schema2 = graphene.Schema(query=UsersQuery)
+
+
+def me_view():
+    view = GraphQLView.as_view('me', schema=schema, graphiql=bool(app.config.get("DEBUG", False)))
     view = jwt_required()(view)
     return view
 
 
-app.add_url_rule('/me', view_func=graphql_token_view())
+def users_view():
+    view = GraphQLView.as_view('users', schema=schema2, graphiql=bool(app.config.get("DEBUG", False)))
+    view = jwt_required()(view)
+    return view
+
+
+app.add_url_rule('/me', view_func=me_view())
+app.add_url_rule('/users', view_func=users_view())
+
+
+@app.route("/", methods=['GET'])
+def welcome():
+    return "Hello World"
 
 
 @app.route("/graphql-schema", methods=['GET'])
