@@ -19,6 +19,7 @@ class User(PynamoObjectType):
     def get_node(self, id, context, info):
         try:
             logged_in_user = g.user
+            print "hi"
         except AttributeError:
             return None
 

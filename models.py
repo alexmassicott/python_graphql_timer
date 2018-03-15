@@ -10,30 +10,6 @@ from flask import jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 
 
-class ModelEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if hasattr(obj, 'attribute_values'):
-            return obj.attribute_values
-        elif isinstance(obj, datetime.datetime):
-            return obj.isoformat()
-        return json.JSONEncoder.default(self, obj)
-
-
-def json_dumps(obj):
-    return json.dumps(obj, cls=ModelEncoder)
-
-
-
-class PasswordAttribute(UnicodeAttribute):
-    def serialize(self, value):
-        if is_password_hash(value):
-            return value
-        return generate_password_hash(value)
-
-    def deserialize(self, value):
-        return value
-
-
 class SessionMap(MapAttribute):
     def deserialize(self, values):
         deserialized_dict = dict()
@@ -81,7 +57,6 @@ class User(Model):
     history = ListAttribute(of=SessionMap)
     sessions = NumberAttribute(null=False)
     completions = NumberAttribute(null=False)
-    password = PasswordAttribute(null=False)
 
 
 if not User.exists():
