@@ -2,18 +2,18 @@ import graphene
 from flask import g, jsonify
 from flask_graphql import GraphQLView
 from flask_jwt import jwt_required
-from graphene import relay
+from graphene import relay, resolve_only_args
 from graphene_pynamodb import PynamoConnectionField, PynamoObjectType
 
 from app import app
 from models import User as UserModel
 
 
+
 class User(PynamoObjectType):
     class Meta:
         model = UserModel
         interfaces = (relay.Node,)
-        exclude_fields = ['password']
 
     @classmethod
     def get_node(self, id, context, info):
@@ -28,6 +28,7 @@ class User(PynamoObjectType):
 class Query(graphene.ObjectType):
     node = relay.Node.Field()
     viewer = graphene.Field(User, )
+    users = graphene.Field(User, id=graphene.String() )
 
     def resolve_viewer(self, args, context, info):
         try:
@@ -37,6 +38,9 @@ class Query(graphene.ObjectType):
 
         return logged_in_user
 
+    def resolve_users(self, args, context, info):
+        print args['id']
+        return UserModel.get(args['id'])
 
 schema = graphene.Schema(query=Query)
 
