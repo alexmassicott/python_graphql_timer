@@ -3,7 +3,7 @@ from flask import g, jsonify
 from flask_graphql import GraphQLView
 from flask_jwt import jwt_required
 from graphene import relay
-from graphene_pynamodb import PynamoObjectType
+from graphene_pynamodb import PynamoConnectionField, PynamoObjectType
 
 from app import app
 from models import User as UserModel
@@ -47,7 +47,7 @@ def graphql_token_view():
     return view
 
 
-app.add_url_rule('/graphql', view_func=graphql_token_view())
+app.add_url_rule('/me', view_func=graphql_token_view())
 
 
 @app.route("/graphql-schema", methods=['GET'])
