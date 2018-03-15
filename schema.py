@@ -7,6 +7,7 @@ from graphene_pynamodb import PynamoConnectionField, PynamoObjectType
 
 from app import app
 from models import User as UserModel
+from models import Session as SessionModel
 
 
 
@@ -19,16 +20,21 @@ class User(PynamoObjectType):
     def get_node(self, id, context, info):
         try:
             logged_in_user = g.user
-            print "hi"
         except AttributeError:
             return None
-
         return logged_in_user
+
+
+class Session(PynamoObjectType):
+    class Meta:
+        model = SessionModel
+        interfaces = (relay.Node,)
 
 
 class ViewerQuery(graphene.ObjectType):
     node = relay.Node.Field()
     fields = graphene.Field(User, )
+    sessions = PynamoConnectionField(Session)
 
     def resolve_fields(self, args, context, info):
         try:
@@ -38,6 +44,13 @@ class ViewerQuery(graphene.ObjectType):
 
         return logged_in_user
 
+    def resolve_sessions(self, args, context, info):
+        try:
+            logged_in_user = g.user
+        except AttributeError:
+            return None
+
+        return SessionModel.id_index.query(id).next()
 
 class UsersQuery(graphene.ObjectType):
     node = relay.Node.Field()

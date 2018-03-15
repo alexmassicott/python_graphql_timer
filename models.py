@@ -10,24 +10,10 @@ from flask import jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 
 
-class SessionMap(MapAttribute):
-    def deserialize(self, values):
-        deserialized_dict = dict()
-        for k in values:
-            v = values[k]
-            attr_value = _get_value_for_deserialize(v)
-            key = self._dynamo_to_python_attr(k)
-            attr_class = self._get_deserialize_class(key, v)
-            if attr_class is None:
-                continue
-            deserialized_value = None
-            if attr_value is not None:
-                deserialized_value = attr_class.deserialize(attr_value)
-
-            deserialized_dict[key] = deserialized_value
-
-        # If this is a subclass of a MapAttribute (i.e typed), instantiate an instance
-        return json.dumps(deserialized_dict, ensure_ascii=False)
+class Session(Model):
+    class Meta:
+        table_name = "sessions"
+        host = "https://dynamodb.us-east-1.amazonaws.com"
 
     id = UnicodeAttribute(attr_name='id')
     start_timestamp = NumberAttribute(attr_name='start_timestamp')
