@@ -8,15 +8,25 @@ from pynamodb.models import Model
 from pynamodb.constants import NULL
 from flask import jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
+# 10100290096651598
+# 8e0c1cb4-454a-4444-92b7-5e4eb82175d0
 
+class IdIndex(GlobalSecondaryIndex):
+    class Meta:
+        projection = AllProjection()
+        index_name = 'id-index'
+
+    id = UnicodeAttribute(hash_key=True)
 
 class Session(Model):
     class Meta:
         table_name = "sessions"
         host = "https://dynamodb.us-east-1.amazonaws.com"
 
-    id = UnicodeAttribute(hash_key=True)
-    start_timestamp = NumberAttribute(null=False)
+    sid = UnicodeAttribute(hash_key=True)
+    id = UnicodeAttribute(null=False)
+    id_index = IdIndex()
+    start_timestamp = NumberAttribute(range_key=True)
     end_timestamp = NumberAttribute(null=False)
     result = UnicodeAttribute()
 
