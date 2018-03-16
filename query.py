@@ -5,6 +5,7 @@ from models import User as UserModel
 from models import Session as SessionModel
 from meta import User, Session
 from graphene_pynamodb import PynamoConnectionField
+from utils import getId
 
 
 class ViewerQuery(graphene.ObjectType):
@@ -17,16 +18,14 @@ class ViewerQuery(graphene.ObjectType):
             logged_in_user = g.user
         except AttributeError:
             return None
-
+        id = logged_in_user.id
+        logged_in_user.sessions = SessionModel.id_index.count(id)
+        logged_in_user.completions = SessionModel.id_index.count(id, SessionModel.result == "success")
         return logged_in_user
 
     def resolve_sessions(self, args, context, info):
-        try:
-            logged_in_user = g.user
-        except AttributeError:
-            return None
-        id = logged_in_user.id
-        return [user for user in SessionModel.id_index.query(id)]
+        id = getId()
+        return [session for session in SessionModel.id_index.query(id)]
 
 
 class UsersQuery(graphene.ObjectType):

@@ -14,8 +14,11 @@ class IdIndex(GlobalSecondaryIndex):
     class Meta:
         projection = AllProjection()
         index_name = 'id-index'
+        read_capacity_units = 1
+        write_capacity_units = 1
 
     id = UnicodeAttribute(hash_key=True)
+
 
 class Session(Model):
     class Meta:
@@ -25,8 +28,9 @@ class Session(Model):
     sid = UnicodeAttribute(hash_key=True)
     id = UnicodeAttribute(null=False)
     id_index = IdIndex()
+    goal = UnicodeAttribute()
     start_timestamp = NumberAttribute(range_key=True)
-    end_timestamp = NumberAttribute(null=False)
+    end_timestamp = NumberAttribute(null=True)
     result = UnicodeAttribute()
 
 
