@@ -31,6 +31,11 @@ class ViewerQuery(graphene.ObjectType):
 class UsersQuery(graphene.ObjectType):
     node = relay.Node.Field()
     users = graphene.List(User, id=graphene.List(graphene.String))
+    timeline = PynamoConnectionField(Session)
 
     def resolve_users(self, args, context, info):
         return [user for user in UserModel.batch_get(args['id'])]
+
+    def resolve_timeline(self, args, context, info):
+        query = (SessionModel.id == "23") | (SessionModel.id == "10100290096651598")
+        return [session for session in SessionModel.scan(query)]
