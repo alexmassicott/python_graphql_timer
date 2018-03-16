@@ -15,16 +15,12 @@ class Session(Model):
         table_name = "sessions"
         host = "https://dynamodb.us-east-1.amazonaws.com"
 
-    id = UnicodeAttribute(attr_name='id')
-    start_timestamp = NumberAttribute(attr_name='start_timestamp')
-    end_timestamp = NumberAttribute(attr_name='end_timestamp')
-    result = UnicodeAttribute(attr_name='result')
+    id = UnicodeAttribute(hash_key=True)
+    start_timestamp = NumberAttribute(null=False)
+    end_timestamp = NumberAttribute(null=False)
+    result = UnicodeAttribute()
 
-def _get_value_for_deserialize(value):
-    key = next(iter(value.keys()))
-    if key == NULL:
-        return None
-    return value[key]
+
 
 class User(Model):
     class Meta:
@@ -40,7 +36,6 @@ class User(Model):
     role = UnicodeAttribute(null=False)
     name = UnicodeAttribute(null=False)
     email = UnicodeAttribute(null=False)
-    history = ListAttribute(of=SessionMap)
     sessions = NumberAttribute(null=False)
     completions = NumberAttribute(null=False)
 

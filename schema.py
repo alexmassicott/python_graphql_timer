@@ -49,19 +49,19 @@ class ViewerQuery(graphene.ObjectType):
             logged_in_user = g.user
         except AttributeError:
             return None
+        id = logged_in_user.id
+        return [user for user in SessionModel.query(id)]
 
-        return SessionModel.id_index.query(id).next()
+schema = graphene.Schema(query=ViewerQuery, types=[User, Session])
 
 class UsersQuery(graphene.ObjectType):
     node = relay.Node.Field()
     users = graphene.List(User, id=graphene.List(graphene.String) )
-
     def resolve_users(self, args, context, info):
         result = UserModel.batch_get(args['id'])
         return [next(result) for i in args['id']]
 
 
-schema = graphene.Schema(query=ViewerQuery)
 schema2 = graphene.Schema(query=UsersQuery)
 
 
