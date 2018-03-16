@@ -3,64 +3,14 @@ from flask import g, jsonify
 from flask_graphql import GraphQLView
 from flask_jwt import jwt_required
 from graphene import relay
-from graphene_pynamodb import PynamoConnectionField, PynamoObjectType
-
 from app import app
 from models import User as UserModel
 from models import Session as SessionModel
+from query import ViewerQuery, UsersQuery
+from mutation import ViewerMutations
+from meta import User, Session
 
-
-
-class User(PynamoObjectType):
-    class Meta:
-        model = UserModel
-        interfaces = (relay.Node,)
-
-    @classmethod
-    def get_node(self, id, context, info):
-        try:
-            logged_in_user = g.user
-        except AttributeError:
-            return None
-        return logged_in_user
-
-
-class Session(PynamoObjectType):
-    class Meta:
-        model = SessionModel
-        interfaces = (relay.Node,)
-
-
-class ViewerQuery(graphene.ObjectType):
-    node = relay.Node.Field()
-    fields = graphene.Field(User, )
-    sessions = PynamoConnectionField(Session)
-
-    def resolve_fields(self, args, context, info):
-        try:
-            logged_in_user = g.user
-        except AttributeError:
-            return None
-
-        return logged_in_user
-
-    def resolve_sessions(self, args, context, info):
-        try:
-            logged_in_user = g.user
-        except AttributeError:
-            return None
-        id = logged_in_user.id
-        return [user for user in SessionModel.id_index.query(id)]
-
-schema = graphene.Schema(query=ViewerQuery, types=[User, Session])
-
-class UsersQuery(graphene.ObjectType):
-    node = relay.Node.Field()
-    users = graphene.List(User, id=graphene.List(graphene.String) )
-    def resolve_users(self, args, context, info):
-        return [user for user in UserModel.batch_get(args['id'])]
-
-
+schema = graphene.Schema(query=ViewerQuery, mutation=ViewerMutations, types=[User, Session])
 schema2 = graphene.Schema(query=UsersQuery)
 
 
