@@ -7,7 +7,6 @@ from meta import User, Session
 from graphene_pynamodb import PynamoConnectionField
 from utils import getId
 
-
 class ViewerQuery(graphene.ObjectType):
     node = relay.Node.Field()
     fields = graphene.Field(User, )
@@ -31,11 +30,12 @@ class ViewerQuery(graphene.ObjectType):
 class UsersQuery(graphene.ObjectType):
     node = relay.Node.Field()
     users = graphene.List(User, id=graphene.List(graphene.String))
-    timeline = PynamoConnectionField(Session)
+    timeline = PynamoConnectionField(Session, feed=graphene.List(graphene.String))
 
     def resolve_users(self, args, context, info):
         return [user for user in UserModel.batch_get(args['id'])]
 
     def resolve_timeline(self, args, context, info):
-        query = SessionModel.id.is_in(*["23", "10100290096651598"])
-        return [session for session in SessionModel.scan(query)]
+        feed = args['feed']
+        query = SessionModel.id.is_in(*feed)
+        return SessionModel.scan(query)
