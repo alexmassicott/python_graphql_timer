@@ -1,4 +1,3 @@
 from schema import app
- 
-app.run()
 
+app.run(port=8080)
