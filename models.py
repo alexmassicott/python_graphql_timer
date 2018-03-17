@@ -24,11 +24,12 @@ class Session(Model):
     class Meta:
         table_name = "sessions"
         host = "https://dynamodb.us-east-1.amazonaws.com"
+        index_name="id-index"
 
     sid = UnicodeAttribute(hash_key=True)
     id = UnicodeAttribute(null=False)
     id_index = IdIndex()
-    goal = UnicodeAttribute()
+    time = UnicodeAttribute()
     start_timestamp = NumberAttribute(range_key=True)
     end_timestamp = NumberAttribute(null=True)
     result = UnicodeAttribute()

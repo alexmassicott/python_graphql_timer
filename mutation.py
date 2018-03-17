@@ -41,11 +41,10 @@ class endSession(graphene.Mutation):
         result = args.get('result')
         id = getId()
         ok = True
-        try:
-            SessionModel.end_timestamp.set(floor(time()))
-            SessionModel.result.set(result)
-        except AttributeError:
-            ok = False
+        lastsession = SessionModel.id_index.query(id,limit=1,scan_index_forward=False).next()
+        lastsession.end_timestamp=(floor(time()))
+        lastsession.result=(result)
+        lastsession.save()
 
         return endSession( success=ok)
 

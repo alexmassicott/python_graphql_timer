@@ -37,5 +37,5 @@ class UsersQuery(graphene.ObjectType):
         return [user for user in UserModel.batch_get(args['id'])]
 
     def resolve_timeline(self, args, context, info):
-        query = (SessionModel.id == "23") | (SessionModel.id == "10100290096651598")
+        query = SessionModel.id.is_in(*["23", "10100290096651598"])
         return [session for session in SessionModel.scan(query)]
