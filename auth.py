@@ -3,7 +3,8 @@ from flask import g
 from models import User
 
 
-def authenticate(id, password):
+def authenticate(id,password="None"):
+    print "yo"
     try:
         user = User.get(id)
         if user:
