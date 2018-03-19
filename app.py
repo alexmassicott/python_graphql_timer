@@ -1,6 +1,8 @@
 import os
 from datetime import timedelta
-
+from models import User
+from time import time
+from math import floor
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import (
@@ -8,16 +10,12 @@ from flask_jwt_extended import (
     create_access_token, create_refresh_token,
     jwt_refresh_token_required, get_raw_jwt
 )
-
-from auth import identity, authenticate
-
-
 app = Flask(__name__)
 
 # Enable blacklisting and specify what kind of tokens to check
 # against the blacklist
 
-app.config['JWT_SECRET_KEY'] = 'uQd8h731dnQLOlvbONMMvjbs8-Ljx-jc1NH0Dw_reHlT6AKgBeXQQ9QzRICrnsNQwS7QNVOA_g0d0oQ1WfWYUn-F-pX9jZ5EoEboAxPyBynFO36d2tfYr36TkkNTt8i99EOlEoGn2K1cRXTT_L9kDAih9Kd0OSeu5qDOx_Dgwk1g_j4YqenfEgFXeU9_P-F-jJuLwuZOho2mJSIdGYmE-xup5bpjgtJmV3Yw4DV41al_GhhC3t9Bkw9jhVHns4utDu7i-SxN1j5kvZg2DhqC5fDm2VFtMfEtbrR6_xRKmJm7syZLCDrjNS8mDu4Gqy2gzpQBkMgwyghyJsUWp70HZw'  # Change this!
+app.config['JWT_SECRET_KEY'] = 'uQd8h731dnQLOlvbONMMvjbs8-Ljx-jc1NH0Dw_'  # Change this!
 app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 jwt = JWTManager(app)
@@ -52,14 +50,22 @@ def check_if_token_in_blacklist(decrypted_token):
 # Standard login endpoint
 @app.route('/login', methods=['POST'])
 def login():
-    username = request.json.get('username', None)
-    password = request.json.get('password', None)
-    if username != 'test' or password != 'test':
-        return jsonify({"msg": "Bad username or password"}), 401
+    print "hi"
+    id = request.json.get('id', None)
+    # password = request.json.get('password', None)
+    try:
+        user = User.get(id)
+        user.last_login=floor(time())
+        user.save()
+    except StopIteration:
+        name = request.json.get('name', None)
+        email = request.json.get('email', None)
+        newuser = User(id=id,name=name,email=email,role="user",last_login=floor(time()))
+        newuser.save();
 
     ret = {
-        'access_token': create_access_token(identity=username),
-        'refresh_token': create_refresh_token(identity=username)
+        'access_token': create_access_token(identity=id),
+        'refresh_token': create_refresh_token(identity=id)
     }
     return jsonify(ret), 200
 
@@ -96,12 +102,8 @@ def logout2():
 
 # This will now prevent users with blacklisted tokens from
 # accessing this endpoint
-@app.route('/protected', methods=['GET'])
-@jwt_required
-def protected():
-    return jsonify({'hello': 'world'})
-
-if __name__ == '__main__':
-    app.run()
-
+# @app.route('/protected', methods=['GET'])
+# @jwt_required
+# def protected():
+#     return jsonify({'hello': 'world'})
 CORS(app)
