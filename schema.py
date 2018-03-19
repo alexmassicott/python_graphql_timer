@@ -1,7 +1,7 @@
 import graphene
 from flask import g, jsonify
 from flask_graphql import GraphQLView
-from flask_jwt import jwt_required
+from flask_jwt_extended import jwt_required
 from graphene import relay
 from app import app
 from models import User as UserModel
@@ -16,13 +16,13 @@ schema2 = graphene.Schema(query=UsersQuery)
 
 def me_view():
     view = GraphQLView.as_view('me', schema=schema, graphiql=bool(app.config.get("DEBUG", False)))
-    view = jwt_required()(view)
+    view = jwt_required(view)
     return view
 
 
 def users_view():
     view = GraphQLView.as_view('users', schema=schema2, graphiql=bool(app.config.get("DEBUG", False)))
-    view = jwt_required()(view)
+    view = jwt_required(view)
     return view
 
 

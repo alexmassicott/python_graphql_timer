@@ -1,15 +1,17 @@
 import os
+from flask import Flask, jsonify, request, g
 from datetime import timedelta
+from flask_cors import CORS
 from models import User
 from time import time
 from math import floor
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from datetime import timedelta
 from flask_jwt_extended import (
     JWTManager, jwt_required, get_jwt_identity,
     create_access_token, create_refresh_token,
     jwt_refresh_token_required, get_raw_jwt
 )
+
 app = Flask(__name__)
 
 # Enable blacklisting and specify what kind of tokens to check
@@ -20,17 +22,7 @@ app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 jwt = JWTManager(app)
 
-# A storage engine to save revoked tokens. In production if
-# speed is the primary concern, redis is a good bet. If data
-# persistence is more important for you, postgres is another
-# great option. In this example, we will be using an in memory
-# store, just to show you how this might work. For more
-# complete examples, check out these:
-# https://github.com/vimalloc/flask-jwt-extended/blob/master/examples/redis_blacklist.py
-# https://github.com/vimalloc/flask-jwt-extended/tree/master/examples/database_blacklist
 blacklist = set()
-
-
 # For this example, we are just checking if the tokens jti
 # (unique identifier) is in the blacklist set. This could
 # be made more complex, for example storing all tokens
@@ -50,22 +42,21 @@ def check_if_token_in_blacklist(decrypted_token):
 # Standard login endpoint
 @app.route('/login', methods=['POST'])
 def login():
-    print "hi"
     id = request.json.get('id', None)
     # password = request.json.get('password', None)
     try:
         user = User.get(id)
-        user.last_login=floor(time())
+        user.last_login = floor(time())
         user.save()
     except StopIteration:
         name = request.json.get('name', None)
         email = request.json.get('email', None)
-        newuser = User(id=id,name=name,email=email,role="user",last_login=floor(time()))
+        newuser = User(id = id, name = name, email=email, role = "user", last_login = floor(time()))
         newuser.save();
-
+        expires = timedelta(days=7)
     ret = {
-        'access_token': create_access_token(identity=id),
-        'refresh_token': create_refresh_token(identity=id)
+        'access_token': create_access_token(identity=id, expires_delta=expires),
+        'refresh_token': create_refresh_token(identity=id, expires_delta=expires)
     }
     return jsonify(ret), 200
 
@@ -100,10 +91,12 @@ def logout2():
     return jsonify({"msg": "Successfully logged out"}), 200
 
 
-# This will now prevent users with blacklisted tokens from
-# accessing this endpoint
-# @app.route('/protected', methods=['GET'])
-# @jwt_required
-# def protected():
-#     return jsonify({'hello': 'world'})
+@jwt.user_claims_loader
+def add_claims_to_access_token(identity):
+    user_id = identity
+    try:
+        g.user = User.get(user_id, None)
+    except User.DoesNotExist:
+        return None
+
 CORS(app)

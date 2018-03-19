@@ -6,25 +6,30 @@ from models import Session as SessionModel
 from meta import User, Session
 from graphene_pynamodb import PynamoConnectionField
 from utils import getId
+from flask_jwt_extended import get_jwt_identity
 
 class ViewerQuery(graphene.ObjectType):
     node = relay.Node.Field()
     fields = graphene.Field(User, )
-    sessions = PynamoConnectionField(Session)
+    history = PynamoConnectionField(Session)
 
     def resolve_fields(self, args, context, info):
+        id = get_jwt_identity()
         try:
-            logged_in_user = g.user
+            logged_in_user = UserModel.get(id)
         except AttributeError:
             return None
-        id = logged_in_user.id
+
+        name = logged_in_user.name
+        print name
         logged_in_user.sessions = SessionModel.id_index.count(id)
         logged_in_user.completions = SessionModel.id_index.count(id, SessionModel.result == "success")
         return logged_in_user
 
-    def resolve_sessions(self, args, context, info):
-        id = getId()
-        return [session for session in SessionModel.id_index.query(id)]
+    def resolve_history(self, args, context, info):
+        id = get_jwt_identity()
+        query = SessionModel.id_index.query(id)
+        return [session for session in query]
 
 
 class UsersQuery(graphene.ObjectType):
