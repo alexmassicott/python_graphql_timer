@@ -38,7 +38,8 @@ class UsersQuery(graphene.ObjectType):
     timeline = PynamoConnectionField(Session, feed=graphene.List(graphene.String))
 
     def resolve_users(self, args, context, info):
-        return [user for user in UserModel.batch_get(args['id'])]
+        new_list = [user.completions=SessionModel.id_index.count(user.id) for user in UserModel.batch_get(args['id'])]
+        return [user for user in new_list]
 
     def resolve_timeline(self, args, context, info):
         feed = args['feed']
