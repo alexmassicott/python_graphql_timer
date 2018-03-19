@@ -1,7 +1,8 @@
 Flask==0.12
 Flask-Cors==3.0.2
 Flask-GraphQL==1.4.0
-Flask-JWT==0.3.2
 graphene==1.2
 graphene-pynamodb==0.9.0
 pynamodb==3.2.1
+graphql-core==1.1
+flask_jwt_extended

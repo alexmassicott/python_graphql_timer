@@ -29,7 +29,7 @@ class Session(Model):
     sid = UnicodeAttribute(hash_key=True)
     id = UnicodeAttribute(null=False)
     id_index = IdIndex()
-    time = UnicodeAttribute()
+    time = NumberAttribute(Null=True)
     start_timestamp = NumberAttribute(range_key=True)
     end_timestamp = NumberAttribute(null=True)
     result = UnicodeAttribute()
@@ -52,7 +52,3 @@ class User(Model):
     email = UnicodeAttribute(null=False)
     sessions = NumberAttribute(null=False)
     completions = NumberAttribute(null=False)
-
-
-if not User.exists():
-    User.create_table(read_capacity_units=1, write_capacity_units=1, wait=True)
