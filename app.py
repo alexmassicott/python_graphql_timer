@@ -52,11 +52,10 @@ def login():
         name = request.json.get('name', None)
         email = request.json.get('email', None)
         newuser = User(id = id, name = name, email=email, role = "user", last_login = floor(time()))
-        newuser.save();
-        expires = timedelta(days=7)
+        newuser.save()
     ret = {
-        'access_token': create_access_token(identity=id, expires_delta=expires),
-        'refresh_token': create_refresh_token(identity=id, expires_delta=expires)
+        'access_token': create_access_token(identity=id, expires_delta=timedelta(days=7)),
+        'refresh_token': create_refresh_token(identity=id, expires_delta=timedelta(days=7))
     }
     return jsonify(ret), 200
 
