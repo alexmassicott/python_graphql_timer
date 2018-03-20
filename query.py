@@ -3,6 +3,7 @@ from graphene import relay
 from flask import g
 from models import User as UserModel
 from models import Session as SessionModel
+from models import SessionIdIndex
 from meta import User, Session
 from graphene_pynamodb import PynamoConnectionField
 from utils import getId
@@ -23,7 +24,7 @@ class ViewerQuery(graphene.ObjectType):
 
     def resolve_history(self, args, context, info):
         id = get_jwt_identity()
-        query = SessionModel.id_index.query(id)
+        query = SessionIdIndex.id_index.query(id,scan_index_forward=False)
         return [session for session in query]
 
 
@@ -38,5 +39,5 @@ class UsersQuery(graphene.ObjectType):
 
     def resolve_timeline(self, args, context, info):
         feed = args['feed']
-        query = SessionModel.id.is_in(*feed)
+        query = SessionIdIndex.uid.is_in(*feed)
         return SessionModel.scan(query)

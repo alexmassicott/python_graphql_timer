@@ -1,38 +1,23 @@
 import uuid
 import json
 
+from graphene_pynamodb.relationships import OneToOne
 from pynamodb.attributes import MapAttribute, ListAttribute, UnicodeAttribute, NumberAttribute
 from pynamodb.indexes import AllProjection
 from pynamodb.indexes import GlobalSecondaryIndex
 from pynamodb.models import Model
 from pynamodb.constants import NULL
 from flask import jsonify
-from werkzeug.security import check_password_hash, generate_password_hash
 
 
 class IdIndex(GlobalSecondaryIndex):
     class Meta:
         projection = AllProjection()
-        index_name = 'id-index'
+        index_name = 'uid-index'
         read_capacity_units = 1
         write_capacity_units = 1
 
-    id = UnicodeAttribute(hash_key=True)
-
-
-class Session(Model):
-    class Meta:
-        table_name = "sessions"
-        host = "https://dynamodb.us-east-1.amazonaws.com"
-        index_name = "id-index"
-
-    sid = UnicodeAttribute(hash_key=True)
-    id = UnicodeAttribute(null=False)
-    id_index = IdIndex()
-    time = NumberAttribute(null=True)
-    start_timestamp = NumberAttribute(range_key=True)
-    end_timestamp = NumberAttribute(null=True)
-    result = UnicodeAttribute()
+    uid = UnicodeAttribute(hash_key=True)
 
 
 class User(Model):
@@ -53,3 +38,29 @@ class User(Model):
     sessions = NumberAttribute(null=True)
     completions = NumberAttribute(null=True)
     last_login = NumberAttribute(null=False)
+
+
+class Session(Model):
+    class Meta:
+        table_name = "sessions"
+        host = "https://dynamodb.us-east-1.amazonaws.com"
+
+    sid = UnicodeAttribute(hash_key=True)
+    uid = OneToOne(User)
+    time = NumberAttribute(null=True)
+    start_timestamp = NumberAttribute(range_key=True)
+    end_timestamp = NumberAttribute(null=True)
+    result = UnicodeAttribute()
+
+class SessionIdIndex(Model):
+    class Meta:
+        table_name = "sessions"
+        host = "https://dynamodb.us-east-1.amazonaws.com"
+
+    sid = UnicodeAttribute(hash_key=True)
+    uid = UnicodeAttribute()
+    id_index = IdIndex()
+    time = NumberAttribute(null=True)
+    start_timestamp = NumberAttribute(range_key=True)
+    end_timestamp = NumberAttribute(null=True)
+    result = UnicodeAttribute()
