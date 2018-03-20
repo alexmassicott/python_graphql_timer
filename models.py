@@ -29,7 +29,7 @@ class Session(Model):
     sid = UnicodeAttribute(hash_key=True)
     id = UnicodeAttribute(null=False)
     id_index = IdIndex()
-    time = UnicodeAttribute(null=False)
+    time = NumberAttribute(null=True)
     start_timestamp = NumberAttribute(range_key=True)
     end_timestamp = NumberAttribute(null=True)
     result = UnicodeAttribute()

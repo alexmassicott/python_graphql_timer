@@ -19,11 +19,6 @@ class ViewerQuery(graphene.ObjectType):
             logged_in_user = UserModel.get(id)
         except AttributeError:
             return None
-
-        name = logged_in_user.name
-        print name
-        logged_in_user.sessions = SessionModel.id_index.count(id)
-        logged_in_user.completions = SessionModel.id_index.count(id, SessionModel.result == "success")
         return logged_in_user
 
     def resolve_history(self, args, context, info):
@@ -38,8 +33,8 @@ class UsersQuery(graphene.ObjectType):
     timeline = PynamoConnectionField(Session, feed=graphene.List(graphene.String))
 
     def resolve_users(self, args, context, info):
-        new_list = [user.completions=SessionModel.id_index.count(user.id) for user in UserModel.batch_get(args['id'])]
-        return [user for user in new_list]
+        query = UserModel.batch_get(args['id']);
+        return [user for user in query]
 
     def resolve_timeline(self, args, context, info):
         feed = args['feed']
