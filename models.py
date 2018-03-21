@@ -47,20 +47,22 @@ class Session(Model):
 
     sid = UnicodeAttribute(hash_key=True)
     uid = OneToOne(User)
-    time = NumberAttribute(null=True)
-    start_timestamp = NumberAttribute(range_key=True)
-    end_timestamp = NumberAttribute(null=True)
-    result = UnicodeAttribute()
-
-class SessionIdIndex(Model):
-    class Meta:
-        table_name = "sessions"
-        host = "https://dynamodb.us-east-1.amazonaws.com"
-
-    sid = UnicodeAttribute(hash_key=True)
-    uid = UnicodeAttribute()
     id_index = IdIndex()
     time = NumberAttribute(null=True)
     start_timestamp = NumberAttribute(range_key=True)
     end_timestamp = NumberAttribute(null=True)
     result = UnicodeAttribute()
+
+# class SessionIdIndex(Model):
+#     class Meta:
+#         table_name = "sessions"
+#         host = "https://dynamodb.us-east-1.amazonaws.com"
+#         index_name = 'uid-index'
+#
+#     sid = UnicodeAttribute(hash_key=True)
+#     uid = UnicodeAttribute()
+#     id_index = IdIndex()
+#     time = NumberAttribute(null=True)
+#     start_timestamp = NumberAttribute(range_key=True)
+#     end_timestamp = NumberAttribute(null=True)
+#     result = UnicodeAttribute()

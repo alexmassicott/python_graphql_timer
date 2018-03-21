@@ -4,7 +4,7 @@ from math import floor
 from graphene import relay
 from flask import g
 from models import User as UserModel
-from models import SessionIdIndex as SessionModel
+from models import Session as SessionModel
 from meta import User, Session
 from graphene_pynamodb import PynamoConnectionField
 from uuid import uuid4
