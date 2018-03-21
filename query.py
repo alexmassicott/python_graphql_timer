@@ -39,5 +39,6 @@ class UsersQuery(graphene.ObjectType):
 
     def resolve_timeline(self, args, context, info):
         feed = args['feed']
-        query = SessionModel.uid.id.is_in(*feed)
-        return SessionModel.scan()
+        u1 = [User(id=id) for id in feed ]
+        query = SessionModel.uid.is_in(*u1)
+        return SessionModel.scan(query)

@@ -22,18 +22,20 @@ class CreateSession(graphene.Mutation):
         goal = args.get('time')
         id = get_jwt_identity()
         ok = True
-        try:
-            lastsession = SessionModel.id_index.query(id,limit=1,scan_index_forward=False).next()
-            if lastsession.result is "pending":
-                lastsession.result = "failed"
-                lastsession.save()
-            session_item = SessionModel(sid=str(uuid4()), start_timestamp=floor(time()), result="pending", time=goal, uid=id)
-            session_item.save()
-            user = UserModel.get(id)
-            user.sessions += 1
-            user.save()
-        except AttributeError:
-            ok = False
+        # try:
+
+        lastsession = SessionModel.id_index.query(id,limit=1,scan_index_forward=False).next()
+        if lastsession.result is "pending":
+            lastsession.result = "failed"
+            lastsession.end_timestamp = floor(time())
+            lastsession.save()
+        session_item = SessionModel(sid=str(uuid4()), start_timestamp=floor(time()), result="pending", time=goal, uid=UserModel(id=id))
+        session_item.save()
+        user = UserModel.get(id)
+        user.sessions += 1
+        user.save()
+        # except AttributeError:
+        #     ok = False
 
         return CreateSession(goal=goal, success=ok)
 

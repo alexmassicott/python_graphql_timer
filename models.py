@@ -10,16 +10,6 @@ from pynamodb.constants import NULL
 from flask import jsonify
 
 
-class IdIndex(GlobalSecondaryIndex):
-    class Meta:
-        projection = AllProjection()
-        index_name = 'uid-index'
-        read_capacity_units = 1
-        write_capacity_units = 1
-
-    uid = UnicodeAttribute(hash_key=True)
-
-
 class User(Model):
     class Meta:
         table_name = "dunkin"
@@ -40,10 +30,21 @@ class User(Model):
     last_login = NumberAttribute(null=False)
 
 
+class IdIndex(GlobalSecondaryIndex):
+    class Meta:
+        projection = AllProjection()
+        index_name = 'uid-index'
+        read_capacity_units = 1
+        write_capacity_units = 1
+
+    uid = UnicodeAttribute(hash_key=True)
+
+
 class Session(Model):
     class Meta:
         table_name = "sessions"
         host = "https://dynamodb.us-east-1.amazonaws.com"
+        index_name = 'uid-index'
 
     sid = UnicodeAttribute(hash_key=True)
     uid = OneToOne(User)
@@ -52,17 +53,3 @@ class Session(Model):
     start_timestamp = NumberAttribute(range_key=True)
     end_timestamp = NumberAttribute(null=True)
     result = UnicodeAttribute()
-
-# class SessionIdIndex(Model):
-#     class Meta:
-#         table_name = "sessions"
-#         host = "https://dynamodb.us-east-1.amazonaws.com"
-#         index_name = 'uid-index'
-#
-#     sid = UnicodeAttribute(hash_key=True)
-#     uid = UnicodeAttribute()
-#     id_index = IdIndex()
-#     time = NumberAttribute(null=True)
-#     start_timestamp = NumberAttribute(range_key=True)
-#     end_timestamp = NumberAttribute(null=True)
-#     result = UnicodeAttribute()
