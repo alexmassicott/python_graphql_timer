@@ -41,4 +41,4 @@ class UsersQuery(graphene.ObjectType):
         feed = args['feed']
         u1 = [User(id=id) for id in feed ]
         query = SessionModel.uid.is_in(*u1)
-        return SessionModel.scan(query, scan_index_forward=False)
+        return SessionModel.scan(query)
