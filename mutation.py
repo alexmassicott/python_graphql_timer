@@ -25,7 +25,7 @@ class CreateSession(graphene.Mutation):
         # try:
 
         lastsession = SessionModel.id_index.query(id,limit=1,scan_index_forward=False).next()
-        if lastsession.result is "pending":
+        if (lastsession.result == "pending"):
             lastsession.result = "failed"
             lastsession.end_timestamp = floor(time())
             lastsession.save()
