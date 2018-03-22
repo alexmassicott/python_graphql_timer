@@ -1,5 +1,6 @@
 import graphene
 from graphene import relay
+from operator import attrgetter
 from flask import g
 from models import User as UserModel
 from models import Session as SessionModel
@@ -39,6 +40,7 @@ class UsersQuery(graphene.ObjectType):
 
     def resolve_timeline(self, args, context, info):
         feed = args['feed']
-        u1 = [User(id=id) for id in feed ]
+        u1 = [User(id=id) for id in feed]
         query = SessionModel.uid.is_in(*u1)
-        return SessionModel.scan(query)
+        newlist = sorted(SessionModel.scan(query), key=attrgetter('start_timestamp'), reverse=True)
+        return newlist
